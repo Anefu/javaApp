@@ -1,5 +1,6 @@
 ---
 - hosts: webservers
+  amazon.aws.ec2_metadata_facts:
   tasks:
 
     - name: Install maven
@@ -25,10 +26,10 @@
       shell: |
         mvn package
       args:
-        chdir: ~/
+        chdir: ~/app
 
     - name: Start Java app
       shell:
         java -jar <app-name>.jar
       args:
-        chdir: ~/
+        chdir: ~/app/targets/
