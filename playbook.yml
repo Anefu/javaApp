@@ -17,10 +17,8 @@
         remote_src: no
 
     - name: Edit application.properties
-      lineinfile:
-        search_string: suchname=Name
-        line: "suchname=${{ ansible_ec2_placement_availability_zone }}"
-        path: ~/src/main/resources/application.properties
+      shell: |
+        sed -i -e "s/suchname=Name/suchname=$(curl http://169.254.169.254/latest/meta-data/placement/availability-zone)" ~/app/src/main/resources/application.properties
 
     - name: Run maven install
       shell: |
