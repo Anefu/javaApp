@@ -39,7 +39,7 @@ jobs:
       - name: Generate known_hosts for webservers
         run: |
           echo "${{ secrets.WEB }}" > hosts
-          echo "${{ secrets.WEB }}" >> ../environments/${{ steps.branch-name.outputs.current_branch }}/inv
+          echo "${{ secrets.WEB }}" >> ./environments/${{ steps.branch-name.outputs.current_branch }}/inv
           for host in $(cat hosts); do
           cat << EOF >> ~/.ssh/config
           Host $host
@@ -56,4 +56,4 @@ jobs:
         with:
           playbook: playbook.yml
           options: |
-            --inventory ../environments/${{ steps.branch-name.outputs.current_branch }}/inv
+            --inventory ./environments/${{ steps.branch-name.outputs.current_branch }}/inv
