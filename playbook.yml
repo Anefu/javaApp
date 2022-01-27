@@ -5,17 +5,29 @@
     - name: Install Java 8
       become: yes
       apt:
-        name: default-jdk-headless
+        name: maven
         state: present
 
     - name: Copy files
       copy:
-        src: <artifacts-path>
+        src: ./*
         dest: ~/
         remote_src: no
+
+    - name: Edit application.properties
+      lineinfile:
+        search_string: suchname=Name
+        line: "suchname=${{ ansible_ec2_placement_availability_zone }}"
+        path: ~/src/main/resources/application.properties
+
+    - name: Run maven install
+      shell: |
+        mvn package
+      args:
+        chdir: ~/
 
     - name: Start Java app
       shell:
         java -jar <app-name>.jar
       args:
-        chdir: ~/artifacts/
+        chdir: ~/
