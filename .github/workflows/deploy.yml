@@ -45,6 +45,7 @@ jobs:
               Hostname $host
               IdentityFile ~/.ssh/id_rsa
               ProxyCommand ssh -W %h:%p bastion
+              StrictHostKeyChecking false
           EOF
           done
 
