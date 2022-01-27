@@ -23,15 +23,15 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PRIVATE_KEY }}
 
+      - name: Install boto3
+        run: pip3 install boto3
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: "us-east-1"
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - name: Get bastion host
-        run: export bastion=$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Bastion.hosts[0]')
           
       - name: Install SSH key of bastion
         uses: shimataro/ssh-key-action@v2
