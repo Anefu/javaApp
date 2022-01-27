@@ -49,8 +49,8 @@ jobs:
 
       - name: Generate known_hosts for webservers
         run: |
-          echo "$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Webservers.hosts[]' )" > hosts
-          echo "$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Webservers.hosts[]' )" >> environments/${{ steps.branch-name.outputs.current_branch }}/inv
+          echo "${{ secrets.WEB }}" > hosts
+          echo "${{ secrets.WEB }}" >> inv
           for host in $(cat hosts); do
           cat << EOF >> ~/.ssh/config
           Host $host
