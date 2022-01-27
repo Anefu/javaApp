@@ -33,7 +33,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - run: aws s3 ls
+      - run: ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list
           
       - name: Install SSH key of bastion
         uses: shimataro/ssh-key-action@v2
