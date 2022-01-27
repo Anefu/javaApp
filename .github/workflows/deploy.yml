@@ -23,18 +23,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PRIVATE_KEY }}
 
-      - name: Install boto3
-        run: pip3 install boto3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: "us-east-1"
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      - run: sudo apt update && sudo apt-get install python3-boto3
-          
       - name: Install SSH key of bastion
         uses: shimataro/ssh-key-action@v2
         with:
@@ -50,7 +38,7 @@ jobs:
       - name: Generate known_hosts for webservers
         run: |
           echo "${{ secrets.WEB }}" > hosts
-          echo "${{ secrets.WEB }}" >> inv
+          echo "${{ secrets.WEB }}" >> environments/${{ steps.branch-name.outputs.current_branch }}/inv
           for host in $(cat hosts); do
           cat << EOF >> ~/.ssh/config
           Host $host
