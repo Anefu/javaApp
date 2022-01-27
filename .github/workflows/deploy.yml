@@ -23,11 +23,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.PRIVATE_KEY }}
 
-      - uses: maddog2050/executable-wrapper@v1
-        id: bastion_host
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          run_command: "ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Bastion.hosts[0]'"
-        continue-on-error: false
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Get bastion host
+        run: export bastion=$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Bastion.hosts[0]')
           
       - name: Install SSH key of bastion
         uses: shimataro/ssh-key-action@v2
@@ -38,7 +41,7 @@ jobs:
           if_key_exists: ignore
           config: |
             Host bastion
-              HostName ${{ steps.bastion_host.outputs.stdout }}
+              HostName ${{ secrets.BASTION }}
               User ubuntu
 
       - name: Generate known_hosts for webservers
