@@ -1,0 +1,21 @@
+---
+- hosts: webservers
+  tasks:
+
+    - name: Install Java 8
+      become: yes
+      apt:
+        name: default-jdk-headless
+        state: present
+
+    - name: Copy files
+      copy:
+        src: <artifacts-path>
+        dest: ~/
+        remote_src: no
+
+    - name: Start Java app
+      shell:
+        java -jar <app-name>.jar
+      args:
+        chdir: ~/artifacts/

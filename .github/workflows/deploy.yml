@@ -1,0 +1,89 @@
+name: Deploy Application
+on:
+  push:
+    branches:
+      - prod
+      - dev
+      - sta
+      - acc
+
+jobs:
+  build:
+    name: Build project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.1
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+
+      - name: Build with Maven
+        run: mvn --batch-mode --update-snapshots verify
+
+      - run: mkdir ${{ steps.branch-name.outputs.current_branch }} && cp target/*.jar ${{ steps.branch-name.outputs.current_branch }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Package
+          path: ${{ steps.branch-name.outputs.current_branch }}
+
+
+  deploy:
+    name: Deploy Project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v5.1
+
+      - name: SSH Agent
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.PRIVATE_KEY }}
+
+      - uses: maddog2050/executable-wrapper@v1
+        id: bastion_host
+        with:
+          run_command: ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Bastion.hosts[0]'
+        continue-on-error: false
+          
+      - name: Install SSH key of bastion
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.PRIVATE_KEY_DEV }}
+          name: id_rsa
+          known_hosts: unnecessary
+          if_key_exists: ignore
+          config: |
+            Host bastion
+              HostName ${{ steps.bastion_host.outputs.stdout }}
+              User ubuntu
+
+      - name: Generate known_hosts for webservers
+        run: |
+          echo "$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Webservers.hosts[]' )" > hosts
+          echo "$(ansible-inventory -i environments/${{ steps.branch-name.outputs.current_branch }}/aws_ec2.yml --list | jq -r '.tag_Name_Webservers.hosts[]' )" >> environments/${{ steps.branch-name.outputs.current_branch }}/inv
+          for host in $(cat hosts); do
+          cat << EOF >> ~/.ssh/config
+          Host $host
+              Hostname $host
+              IdentityFile ~/.ssh/id_rsa
+              ProxyCommand ssh -W %h:%p bastion
+          EOF
+          done
+
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: playbook.yml
+          options: |
+            --inventory environments/${{ steps.branch-name.outputs.current_branch }}/inv
