@@ -33,7 +33,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      - run: apt-get install python-boto3
+      - run: sudo apt-get install python-boto3
           
       - name: Install SSH key of bastion
         uses: shimataro/ssh-key-action@v2
