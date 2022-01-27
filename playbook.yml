@@ -30,3 +30,8 @@
         nohup java -jar suchapp-0.0.1-SNAPSHOT.jar > log.log 2>&1 &
       args:
         chdir: ~/app/target/
+
+    - name: Restart nginx
+      systemd:
+        name: nginx 
+        state: restarted
