@@ -27,6 +27,6 @@
 
     - name: Start Java app
       shell:
-        java -jar <app-name>.jar
+        java -jar suchapp 0.0.1-SNAPSHOT.jar
       args:
-        chdir: ~/app/targets/
+        chdir: ~/app/target/
