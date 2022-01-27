@@ -2,15 +2,16 @@
 - hosts: webservers
   tasks:
 
-    - name: Install Java 8
+    - name: Install maven
       become: yes
       apt:
         name: maven
         state: present
+        update_cache: yes
 
     - name: Copy files
       copy:
-        src: ./*
+        src: ./app
         dest: ~/
         remote_src: no
 
